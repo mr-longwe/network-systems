@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>{{ app_name }} | Edge Monitoring</title>
+  <link rel="stylesheet" href="/static/css/main.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Desktop Fixed Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <div class="brand-section">
+        <span class="brand-badge"></span>
+        <div>
+          <div class="brand-title">Edge Monitor</div>
+          <div class="brand-subtitle">NET-SYS V{{ version }}</div>
+        </div>
+      </div>
+
+      <ul class="nav-menu">
+        <li class="nav-item">
+          <a class="nav-link active" data-view="overview" onclick="switchView('overview')">
+            <span class="nav-icon">📊</span>
+            <span>Overview</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" data-view="live" onclick="switchView('live')">
+            <span class="nav-icon">📹</span>
+            <span>Live Monitoring</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" data-view="events" onclick="switchView('events')">
+            <span class="nav-icon">⚡</span>
+            <span>Events</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" data-view="recordings" onclick="switchView('recordings')">
+            <span class="nav-icon">💾</span>
+            <span>Recordings</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" data-view="cameras" onclick="switchView('cameras')">
+            <span class="nav-icon">⚙️</span>
+            <span>Cameras</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" data-view="system" onclick="switchView('system')">
+            <span class="nav-icon">🖥️</span>
+            <span>System</span>
+          </a>
+        </li>
+      </ul>
+
+      <div class="sidebar-footer">
+        <div>NODE: 192.168.1.161</div>
+        <div>STATUS: ACTIVE</div>
+      </div>
+    </aside>
+
+    <!-- Main Content Wrapper -->
+    <div class="main-wrapper">
+      <!-- Topbar Header -->
+      <header class="topbar">
+        <div class="topbar-left">
+          <button class="mobile-nav-toggle" id="mobile-nav-toggle" aria-label="Toggle Navigation">☰</button>
+          <h1 class="view-heading" id="topbar-view-title">System Overview</h1>
+        </div>
+        <div class="topbar-right">
+          <div class="system-pill">
+            <span class="status-dot pulse"></span>
+            <span class="hide-mobile">EDGE LIVE</span>
+            <span id="uptime-display">UP: --</span>
+          </div>
+        </div>
+      </header>
+
+      <!-- Content Body -->
+      <main class="content-body">
+        <!-- 1. OVERVIEW VIEW -->
+        <section class="view-section active" id="view-overview">
+          <div class="metrics-grid">
+            <div class="metric-card">
+              <div class="metric-label">Online Cameras</div>
+              <div class="metric-value" id="metric-cameras-online">0 / 0</div>
+              <div class="metric-sub">RTSP Video Sources</div>
+            </div>
+
+            <div class="metric-card">
+              <div class="metric-label">Active Events</div>
+              <div class="metric-value" id="metric-events-val">0</div>
+              <div class="metric-sub" id="metric-events-sub">0 recent events</div>
+            </div>
+
+            <div class="metric-card">
+              <div class="metric-label">Storage Utilisation</div>
+              <div class="metric-value" id="metric-storage-val">-- GB</div>
+              <div class="metric-sub" id="metric-storage-sub">Scanning disk...</div>
+              <div class="progress-bar">
+                <div class="progress-fill" id="metric-storage-bar" style="width: 0%"></div>
+              </div>
+            </div>
+
+            <div class="metric-card">
+              <div class="metric-label">CPU Utilisation</div>
+              <div class="metric-value" id="metric-cpu-val">0%</div>
+              <div class="metric-sub" id="metric-cpu-sub">Intel Core i5-1035G1</div>
+              <div class="progress-bar">
+                <div class="progress-fill" id="metric-cpu-bar" style="width: 0%"></div>
+              </div>
+            </div>
+
+            <div class="metric-card">
+              <div class="metric-label">RAM Utilisation</div>
+              <div class="metric-value" id="metric-ram-val">0%</div>
+              <div class="metric-sub" id="metric-ram-sub">8 GB Total</div>
+              <div class="progress-bar">
+                <div class="progress-fill" id="metric-ram-bar" style="width: 0%"></div>
+              </div>
+            </div>
+
+            <div class="metric-card">
+              <div class="metric-label">Network Throughput</div>
+              <div class="metric-value" id="metric-net-val">0 kbps</div>
+              <div class="metric-sub" id="metric-net-sub">TX: 0 kbps</div>
+            </div>
+          </div>
+
+          <div class="section-header">
+            <h2 class="section-title">Camera Preview Feeds</h2>
+            <button class="btn btn-sm" onclick="switchView('live')">Full Grid</button>
+          </div>
+          <div class="camera-grid" id="overview-camera-previews">
+            <!-- Rendered dynamically -->
+          </div>
+
+          <div class="section-header" style="margin-top: 24px;">
+            <h2 class="section-title">Recent Events</h2>
+            <button class="btn btn-sm" onclick="switchView('events')">View All</button>
+          </div>
+          <div class="table-container">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Event Type</th>
+                  <th>Camera ID</th>
+                  <th>Timestamp</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="overview-recent-events">
+                <!-- Rendered dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- 2. LIVE MONITORING VIEW -->
+        <section class="view-section" id="view-live">
+          <div class="section-header">
+            <h2 class="section-title">Live Camera Streams</h2>
+            <button class="btn btn-sm" onclick="pollTelemetry()">Refresh Feeds</button>
+          </div>
+          <div class="camera-grid" id="live-cameras-grid">
+            <!-- Rendered dynamically -->
+          </div>
+        </section>
+
+        <!-- 3. EVENTS VIEW -->
+        <section class="view-section" id="view-events">
+          <div class="section-header">
+            <h2 class="section-title">Motion & Connection Events</h2>
+            <div style="display: flex; gap: 8px;">
+              <select class="form-select" id="events-filter-cam" onchange="loadEventsView()" style="width: auto; padding: 4px 8px; font-size: 12px;">
+                <option value="">All Cameras</option>
+                <option value="cam-1">Camera 1</option>
+                <option value="cam-2">Camera 2</option>
+                <option value="cam-3">Camera 3</option>
+              </select>
+              <button class="btn btn-sm" onclick="loadEventsView()">Refresh</button>
+            </div>
+          </div>
+          <div class="table-container">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Event ID</th>
+                  <th>Camera</th>
+                  <th>Type</th>
+                  <th>Start Time</th>
+                  <th>End Time</th>
+                  <th>Status</th>
+                  <th>Details</th>
+                </tr>
+              </thead>
+              <tbody id="events-table-body">
+                <!-- Rendered dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- 4. RECORDINGS VIEW -->
+        <section class="view-section" id="view-recordings">
+          <div class="section-header">
+            <h2 class="section-title">Stored Video Recordings</h2>
+            <div style="display: flex; gap: 8px;">
+              <select class="form-select" id="recordings-filter-cam" onchange="loadRecordingsView()" style="width: auto; padding: 4px 8px; font-size: 12px;">
+                <option value="">All Cameras</option>
+                <option value="cam-1">Camera 1</option>
+                <option value="cam-2">Camera 2</option>
+                <option value="cam-3">Camera 3</option>
+              </select>
+              <button class="btn btn-sm" onclick="loadRecordingsView()">Refresh</button>
+            </div>
+          </div>
+          <div class="table-container">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Recording ID</th>
+                  <th>Camera</th>
+                  <th>Date & Time</th>
+                  <th>Duration</th>
+                  <th>File Size</th>
+                  <th>Status</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="recordings-table-body">
+                <!-- Rendered dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- 5. CAMERAS VIEW -->
+        <section class="view-section" id="view-cameras">
+          <div class="section-header">
+            <h2 class="section-title">Configured RTSP Cameras</h2>
+            <button class="btn btn-primary btn-sm" onclick="openModal('add-camera-modal')">+ Register Camera</button>
+          </div>
+          <div class="table-container">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Camera ID</th>
+                  <th>Name</th>
+                  <th>RTSP Stream URL</th>
+                  <th>Parameters</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="cameras-table-body">
+                <!-- Rendered dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- 6. SYSTEM VIEW -->
+        <section class="view-section" id="view-system">
+          <div class="section-header">
+            <h2 class="section-title">Host Telemetry & System Diagnostics</h2>
+            <button class="btn btn-sm" onclick="pollTelemetry()">Refresh</button>
+          </div>
+
+          <div class="metrics-grid">
+            <div class="metric-card">
+              <div class="metric-label">CPU Cores & Model</div>
+              <div class="metric-value"><span id="sys-cpu-cores">--</span> Cores</div>
+              <div class="metric-sub">Utilization: <strong id="sys-cpu-percent">--%</strong></div>
+            </div>
+
+            <div class="metric-card">
+              <div class="metric-label">Memory Allocation</div>
+              <div class="metric-value" id="sys-mem-used">-- MB</div>
+              <div class="metric-sub" id="sys-mem-total">-- MB total</div>
+            </div>
+
+            <div class="metric-card">
+              <div class="metric-label">Disk Volume</div>
+              <div class="metric-value" id="sys-disk-free">-- GB Free</div>
+              <div class="metric-sub" id="sys-disk-total">Drive: <span id="sys-disk-drive">--</span></div>
+            </div>
+
+            <div class="metric-card">
+              <div class="metric-label">Process Memory & Uptime</div>
+              <div class="metric-value" id="sys-proc-mem">-- MB</div>
+              <div class="metric-sub">Uptime: <span id="sys-uptime">--</span> | Threads: <span id="sys-proc-threads">--</span></div>
+            </div>
+          </div>
+
+          <div class="table-container" style="margin-top: 16px;">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Diagnostic Item</th>
+                  <th>Value</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Operating System</td>
+                  <td>Windows 10 Pro (x86_64)</td>
+                </tr>
+                <tr>
+                  <td>Network Interface Baseline</td>
+                  <td>1 Gbps Ethernet | Host IPv4: <code>192.168.1.161</code> | Gateway: <code>192.168.1.1</code></td>
+                </tr>
+                <tr>
+                  <td>Network I/O Inbound (RX)</td>
+                  <td id="sys-net-rx">--</td>
+                </tr>
+                <tr>
+                  <td>Network I/O Outbound (TX)</td>
+                  <td id="sys-net-tx">--</td>
+                </tr>
+                <tr>
+                  <td>Edge Server Architecture</td>
+                  <td>Modular Monolith (Python 3.12 + FastAPI + OpenCV)</td>
+                </tr>
+                <tr>
+                  <td>Video Codec / Format</td>
+                  <td>MJPEG (Live Browser) / MP4-mp4v (Local Storage)</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <!-- Mobile Bottom Navigation -->
+    <nav class="mobile-bottom-nav">
+      <a class="mobile-nav-item active" data-view="overview" onclick="switchView('overview')">
+        <span>📊</span>
+        <span>Overview</span>
+      </a>
+      <a class="mobile-nav-item" data-view="live" onclick="switchView('live')">
+        <span>📹</span>
+        <span>Live</span>
+      </a>
+      <a class="mobile-nav-item" data-view="events" onclick="switchView('events')">
+        <span>⚡</span>
+        <span>Events</span>
+      </a>
+      <a class="mobile-nav-item" data-view="recordings" onclick="switchView('recordings')">
+        <span>💾</span>
+        <span>Clips</span>
+      </a>
+      <a class="mobile-nav-item" data-view="system" onclick="switchView('system')">
+        <span>🖥️</span>
+        <span>System</span>
+      </a>
+    </nav>
+  </div>
+
+  <!-- MODAL: Add Camera -->
+  <div class="modal-backdrop" id="add-camera-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">Register RTSP Camera</h3>
+        <button class="btn btn-sm" onclick="closeModal('add-camera-modal')">✕</button>
+      </div>
+      <form id="add-camera-form">
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label" for="cam-id-input">Camera Identifier (e.g. cam-1, cam-front)</label>
+            <input class="form-input" id="cam-id-input" type="text" required placeholder="cam-1" />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="cam-name-input">Camera Name</label>
+            <input class="form-input" id="cam-name-input" type="text" required placeholder="Android Front Entrance" />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="cam-url-input">RTSP Stream URL</label>
+            <input class="form-input" id="cam-url-input" type="text" required placeholder="rtsp://192.168.1.110:8080/h264_pcm.sdp" />
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+            <div class="form-group">
+              <label class="form-label" for="cam-fps-input">Processing FPS (5–15)</label>
+              <input class="form-input" id="cam-fps-input" type="number" min="1" max="30" value="10" />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="cam-res-input">Target Resolution</label>
+              <select class="form-select" id="cam-res-input">
+                <option value="640x480" selected>640x480 (Recommended)</option>
+                <option value="640x360">640x360</option>
+                <option value="1280x720">1280x720 (High CPU)</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group" style="display: flex; align-items: center; gap: 8px;">
+            <input type="checkbox" id="cam-enabled-input" checked />
+            <label class="form-label" for="cam-enabled-input" style="margin-bottom: 0;">Enable stream immediately</label>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn" onclick="closeModal('add-camera-modal')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Camera</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: Fullscreen Stream View -->
+  <div class="modal-backdrop" id="stream-modal">
+    <div class="modal-content" style="max-width: 800px;">
+      <div class="modal-header">
+        <h3 class="modal-title" id="stream-modal-title">Live View</h3>
+        <button class="btn btn-sm" onclick="closeFullscreenStream()">✕</button>
+      </div>
+      <div class="modal-body" style="padding: 0;">
+        <div class="video-container" style="aspect-ratio: 16/9; min-height: 400px;">
+          <img class="video-stream-img" id="fullscreen-stream-img" src="" alt="Live Feed" />
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn" onclick="closeFullscreenStream()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: Video Playback -->
+  <div class="modal-backdrop" id="video-modal">
+    <div class="modal-content" style="max-width: 800px;">
+      <div class="modal-header">
+        <h3 class="modal-title" id="video-modal-title">Recording Playback</h3>
+        <button class="btn btn-sm" onclick="closeVideoPlayer()">✕</button>
+      </div>
+      <div class="modal-body" style="padding: 0;">
+        <div class="video-player-container">
+          <video id="playback-video-el" controls preload="metadata"></video>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn" onclick="closeVideoPlayer()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/js/api.js"></script>
+  <script src="/static/js/app.js"></script>
+</body>
+</html>
+

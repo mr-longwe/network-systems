@@ -1,0 +1,49 @@
+
+# Python bytecode and cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Python virtual environments
+.venv/
+venv/
+env/
+
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+secrets/
+credentials/
+
+# IDE and editor settings
+.vscode/
+.idea/
+
+# Operating system files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs and temporary files
+*.log
+tmp/
+temp/
+
+# Test and coverage output
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Generated video and image evidence
+*.mp4
+*.avi
+*.mkv
+*.mov
+recordings/
+captures/
+
+# Local databases
+*.db
+*.sqlite
+*.sqlite3
