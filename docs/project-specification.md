@@ -414,7 +414,7 @@ The structure may evolve as the implementation develops. Do not create empty mod
 
 Runtime data, recordings, databases and secrets must remain outside version control.
 
-## 14. AI-Assisted Development Instructions
+## 14. AI-Assisted Development
 
 Any AI coding agent working on this project must:
 
